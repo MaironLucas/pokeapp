@@ -7,7 +7,7 @@ import com.example.pokeapp.domain.model.PokemonSummary
 import kotlinx.coroutines.flow.Flow
 
 class GetPokemonListUC (private val pokeRepository: PokeRepository) {
-    operator fun invoke(): Flow<PagingData<PokemonSummaryRM>> {
-        return pokeRepository.getPokemons()
+    operator fun invoke(query: String): Flow<PagingData<PokemonSummary>> {
+        return pokeRepository.getPokemons(query)
     }
 }

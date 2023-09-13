@@ -1,49 +1,54 @@
 package com.example.pokeapp.presentation.home
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.example.pokeapp.PokeApplication
-import com.example.pokeapp.data.data_source.remote.model.PokemonSummaryRM
-import com.example.pokeapp.domain.model.PokemonSummary
 import com.example.pokeapp.domain.use_case.GetPokemonListUC
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.launch
-
-sealed interface PokeListUiState {
-    data class Success(val pokeList: List<PokemonSummary>) : PokeListUiState
-    data class Error(val errorMessage: String) : PokeListUiState
-    object Loading : PokeListUiState
-}
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.flatMap
+import kotlinx.coroutines.flow.flatMapConcat
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.stateIn
+import kotlin.time.Duration.Companion.milliseconds
 
 class HomeViewModel(private val getPokemonListUC: GetPokemonListUC) : ViewModel() {
-    var pokeListUiState: PokeListUiState by mutableStateOf(PokeListUiState.Loading)
-        private set
 
-    val pokeListPaging = getPokemonListUC.invoke().cachedIn(viewModelScope)
+    private val _search = MutableStateFlow("")
 
-//    init {
-//        getPokemonList()
-//    }
-//
-//    fun getPokemonList() {
-//        viewModelScope.launch {
-//            pokeListUiState = PokeListUiState.Loading
-//            pokeListUiState = try {
-//                PokeListUiState.Success(getPokemonListUC())
-//            } catch (e: Exception){
-//                PokeListUiState.Error(e.message ?: "Unknown error")
-//            }
-//        }
-//    }
+    val search = _search.asStateFlow()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(),
+            initialValue = "",
+        )
+
+    private val _isSearchShowing = MutableStateFlow(false)
+
+    val isSearchShowing = _isSearchShowing.asStateFlow()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(),
+            initialValue = false,
+        )
+
+    val pokeListPaging = search.debounce(300.milliseconds)
+        .flatMapLatest { query -> getPokemonListUC(query).cachedIn(viewModelScope) }
+
+    fun setSearch(query: String) {
+        _search.value = query
+    }
+
+    fun toggleSearch() {
+        _isSearchShowing.value = !_isSearchShowing.value
+    }
 
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {

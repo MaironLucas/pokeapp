@@ -13,10 +13,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
-import com.example.mymovies.R
 import com.example.pokeapp.presentation.home.HomeScreen
 import com.example.pokeapp.presentation.home.HomeViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.pokeapp.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
