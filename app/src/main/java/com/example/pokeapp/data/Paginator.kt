@@ -21,7 +21,7 @@ class Paginator(private val pokemonRDS: PokemonRDS, private val searchString: St
         val position = params.key ?: 0
         return try {
             val limit = if (searchString == null) params.loadSize else 100
-            val response = pokemonRDS.getPokemons(position * 20, limit)
+            val response = pokemonRDS.getPokemons(position * if (searchString == null) 20 else 100, limit)
             var filteredData = if (searchString == null) {
                 response.results.map { pokemon ->
                     val id = pokemon.url.split("/").last { it.isNotBlank() }.toInt()

@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.flatMap
 import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlin.time.Duration.Companion.milliseconds
 
 class HomeViewModel(private val getPokemonListUC: GetPokemonListUC) : ViewModel() {
@@ -33,11 +34,6 @@ class HomeViewModel(private val getPokemonListUC: GetPokemonListUC) : ViewModel(
     private val _isSearchShowing = MutableStateFlow(false)
 
     val isSearchShowing = _isSearchShowing.asStateFlow()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(),
-            initialValue = false,
-        )
 
     val pokeListPaging = search.debounce(300.milliseconds)
         .flatMapLatest { query -> getPokemonListUC(query).cachedIn(viewModelScope) }
@@ -47,7 +43,9 @@ class HomeViewModel(private val getPokemonListUC: GetPokemonListUC) : ViewModel(
     }
 
     fun toggleSearch() {
-        _isSearchShowing.value = !_isSearchShowing.value
+        _isSearchShowing.update {
+            !it
+        }
     }
 
     companion object {
