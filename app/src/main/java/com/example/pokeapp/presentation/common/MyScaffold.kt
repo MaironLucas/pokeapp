@@ -45,9 +45,9 @@ fun MyScaffold(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PokeTopAppBar(
+    modifier: Modifier = Modifier,
     scrollBehavior: TopAppBarScrollBehavior,
     appBarIcon: @Composable() (RowScope.() -> Unit) = {},
-    modifier: Modifier = Modifier
 ) {
     CenterAlignedTopAppBar(
         scrollBehavior = scrollBehavior,
